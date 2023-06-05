@@ -8,6 +8,7 @@ from celery import Celery
 from sqlalchemy.orm import sessionmaker
 
 from superagi import worker
+from superagi.tools.discord.discord_msg_automation import DiscordMsgTool
 from superagi.agent.super_agi import SuperAgi
 from superagi.config.config import get_config
 from superagi.llms.openai import OpenAi
@@ -33,19 +34,19 @@ import superagi.worker
 engine = connectDB()
 Session = sessionmaker(bind=engine)
 
-class AgentExecutor:
+class ExecAgent:
     @staticmethod
     def validate_filename(filename):
         if filename.endswith(".py"):
-            return filename[:-3]  # Remove the last three characters (i.e., ".py")
+            return filename[:-3]  # Removes the last three characters (i.e., ".py")
         return filename
 
     @staticmethod
     def create_object(class_name, folder_name, file_name):
-        file_name = AgentExecutor.validate_filename(filename=file_name)
+        file_name = ExecAgent.validate_filename(filename=file_name)
         module_name = f"superagi.tools.{folder_name}.{file_name}"
 
-        # Load the module dynamically
+        # Dynamically load the module
         module = importlib.import_module(module_name)
 
         # Get the class from the loaded module
@@ -75,7 +76,8 @@ class AgentExecutor:
             parsed_config = self.fetch_agent_configuration(session, agent, agent_execution)
             tools = [
                 LlmThinkingTool(llm=OpenAi(model=parsed_config["model"])),
-                # GoogleSearchTool(),
+                MsgfuncTool().run_discord_bot()
+                # GoogleSearchTool()
                 # WriteFileTool(),
                 # ReadFileTool(),
                 # ReadEmailTool(),
@@ -95,7 +97,7 @@ class AgentExecutor:
             user_tools = session.query(Tool).filter(Tool.id.in_(parsed_config["tools"])).all()
 
             for tool in user_tools:
-                tools.append(AgentExecutor.create_object(tool.class_name, tool.folder_name, tool.file_name))
+                tools.append(ExecAgent.create_object(tool.class_name, tool.folder_name, tool.file_name))
 
             spawned_agent = SuperAgi(ai_name=parsed_config["name"], ai_role=parsed_config["description"],
                                      llm=OpenAi(model=parsed_config["model"]), tools=tools, memory=memory,

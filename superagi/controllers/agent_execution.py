@@ -8,7 +8,7 @@ from fastapi_jwt_auth import AuthJWT
 from superagi.worker import execute_agent
 from superagi.agent import super_agi
 from superagi.config.config import get_config
-from superagi.jobs.agent_executor import AgentExecutor
+from superagi.jobs.agent_executor import ExecAgent
 # import worker
 from superagi.models.agent_execution import AgentExecution
 from superagi.models.agent import Agent

@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from celery import Celery
 
 from superagi.config.config import get_config
-from superagi.jobs.agent_executor import AgentExecutor
+from superagi.jobs.agent_executor import ExecAgent
 
 redis_url = get_config('REDIS_URL')
 
@@ -16,4 +16,4 @@ app.conf.worker_concurrency = 10
 def execute_agent(agent_execution_id: int, time):
     """Execute an agent step in background."""
     print("Execute agent:" + str(time) + "," + str(agent_execution_id))
-    AgentExecutor().execute_next_action(agent_execution_id=agent_execution_id)
+    ExecAgent().execute_next_action(agent_execution_id=agent_execution_id)
